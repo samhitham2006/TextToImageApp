@@ -1,7 +1,7 @@
 streamlit==1.49.1
-torch
-diffusers
-transformers
-accelerate
-safetensors
-pillow
+torch==2.1.2
+diffusers==0.25.0
+transformers==4.37.2
+accelerate==0.27.2
+safetensors==0.4.2
+Pillow==11.3.0
