@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🎨 AI Text-to-Image Generator using Stable Diffusion")
+st.title("🎨 AI Text-to-Image Generator")
 
 # --------------------------------------------------
 # Sidebar
@@ -22,14 +22,9 @@ st.sidebar.title("Settings")
 
 steps = st.sidebar.slider(
     "Inference Steps",
-    min_value=10,
+    min_value=5,
     max_value=20,
-    value=15
-)
-
-size = st.sidebar.selectbox(
-    "Image Size",
-    ["512x512", "768x768"]
+    value=10
 )
 
 st.sidebar.markdown("---")
@@ -62,11 +57,9 @@ def load_model():
         torch_dtype=torch.float32
     )
 
-    if torch.cuda.is_available():
-        pipe = pipe.to("cuda")
+    pipe = pipe.to("cpu")
 
     return pipe
-
 
 pipe = load_model()
 
@@ -104,20 +97,20 @@ if generate and prompt:
 
     with st.spinner("Generating image... Please wait."):
 
-        width = 512
-        height = 512
+        try:
 
-        if size == "768x768":
-            width = 768
-            height = 768
+            image = pipe(
+                prompt,
+                num_inference_steps=steps,
+                guidance_scale=7.5,
+                width=512,
+                height=512
+            ).images[0]
 
-        image = pipe(
-            prompt,
-            num_inference_steps=steps,
-            guidance_scale=7.5,
-            width=width,
-            height=height
-        ).images[0]
+        except Exception as e:
+
+            st.error(f"Generation failed: {e}")
+            st.stop()
 
         st.session_state.history.append(prompt)
 
@@ -135,11 +128,10 @@ Prompt: {prompt}
 
 Inference Steps: {steps}
 
-Image Size: {size}
+Image Size: 512x512
 """
         )
 
-        # Create folder if not exists
         os.makedirs("generated_images", exist_ok=True)
 
         filename = (
